@@ -24,5 +24,6 @@ ARM version developed for the **CAPES-Cofecub project MESO - Modeling and foreca
 To run, you can use the following basic command:
 
 ```sh
-docker run -it -v /PATH_TO/WPS_GEOG:/wps_geog -v /PATH_TO/YOUR_DATA:/wrfinput -v /PATH_TO/WRFOUTPUT:/wrfoutput my-wrf /wrf/run-wrf
+docker pull lsteffenel/wrf-container-armv7l
+docker run -it -v /PATH_TO/WPS_GEOG:/wps_geog -v /PATH_TO/YOUR_DATA:/wrfinput -v /PATH_TO/WRFOUTPUT:/wrfoutput wrf-container-armv7l /wrf/run-wrf
 ```
