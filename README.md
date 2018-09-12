@@ -2,7 +2,7 @@
 #
 containerized WRF for single-node modeling runs, classroom teaching and training examples.
 
-Based on the bigwxwrf set of docker images
+Based on the NCAR/wrf-container[https://github.com/NCAR/container-wrf/] set of docker images
 
 This version was specifically modified to compile and run in a Raspberry Pi (tested with RPi 3 and Raspbian Jessie), thanks to the help of [http://supersmith.com/site/ARM_files/wrf_on_arm.pdf] and [https://www.raspberrypi.org/forums/viewtopic.php?t=19248].
 
