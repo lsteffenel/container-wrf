@@ -13,8 +13,7 @@ NCAR developed WRF in Docker containers, related code and data sets for communit
 Unsupported by UCAR/NCAR staff, yet community discussions and feedback will be channeled through google group or here on github soon.
 (C) UCAR 2017. Developed at the Research Applications Laboratory at National Center for Atmospheric Research.
 
-ARM version developed for the **CAPES-Cofecub project MESO - Modeling and forecasting the Secondary Effects of the Antarctic Ozone Hole** [http://meso.univ-reims.fr].
-(C) URCA 2018. Developed by Luiz Angelo Steffenel at CReSTIC Laboratory.
+ARM version developed for the **CAPES-Cofecub project MESO - Modeling and forecasting the Secondary Effects of the Antarctic Ozone Hole** [http://meso.univ-reims.fr]. Developed by Luiz Angelo Steffenel at CReSTIC Laboratory, URCA (2018).
 
 
 ## Hints for running on Raspberry Pi 3
