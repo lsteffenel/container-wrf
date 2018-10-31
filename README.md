@@ -6,6 +6,9 @@ Based on the bigwxwrf set of docker images
 
 This version was specifically modified to compile and run in a Raspberry Pi (tested with RPi 3 and Raspbian Jessie), thanks to the help of [http://supersmith.com/site/ARM_files/wrf_on_arm.pdf] and [https://www.raspberrypi.org/forums/viewtopic.php?t=19248].
 
+The centos version (:centos) is based on the original bigxwrf Dockerfile.
+The latest version (:latest) was migrated to Ubuntu 16.04 in order to better support kubernetes/cluster deployment.
+
 Only the wrf executables were modified, you can keep using the wps_geog and data samples from bigwxwrf.
 
 
