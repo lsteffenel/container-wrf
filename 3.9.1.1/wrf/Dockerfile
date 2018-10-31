@@ -8,7 +8,7 @@ MAINTAINER Angelo Steffenel <angelo.steffenel@univ-reims.fr>
 
 RUN apt-get -y update \
  && apt-get install -y csh curl wget vim openssh-server gfortran m4 mpich libhdf5-mpich-dev \
- && atp-get install -y libpng-dev libjasper-dev libnetcdff-dev libnetcdf-dev netcdf-bin ncl-ncarg mlocate \
+ && apt-get install -y libpng-dev libjasper-dev libnetcdff-dev libnetcdf-dev netcdf-bin ncl-ncarg mlocate \
     && apt-get clean
 #
 # This Dockerfile compiles WRF from source during "docker build" step
