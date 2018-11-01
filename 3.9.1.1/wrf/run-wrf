@@ -1,16 +1,21 @@
 #!/bin/bash
-#
-# Simplified script to run wrf test Sandy case in Docker world
-#
-# Examples in block below.
-# ./run-wrf -np 2 -slots 2 -face eth0 -skip wps -namelist /path/to/namelist -skip real
 
-export btl_base_warn_component_unused=0
+# simple run on localhost (WPS+real+WRF) 
+# ./run-wrf -hosts localhost:4 -np 4
+
+# Just real + WRF (met* files from WPS) - 4 cores, 4 processes (don't need to have /WPS_GEOG)
+# ./run-wrf -skip wps -hosts localhost:4 -np 4
+
+# Just WRF (met* files from WPS and wrfbdy* + wrfinput* from real in /wrfinput) - 4 cores, 4 processes
+# ./run-wrf -skip wps -skip real -hosts localhost:4 -np 4
+
+# multiple machines (WPS+real+WRF): all machines must access /wrfinput and /WPS_GEOG
+# ./run-wrf -hosts machine1:2,machine2:2 -np 4
 
 #Initalize options
+
 num_procs=1
 process_per_host=1
-iface=eth0
 skip_wps=false
 skip_real=false
 my_namelist=false
@@ -21,7 +26,7 @@ hosts=127.0.0.1
 WRF_BUILD="/wrf"
 INPUT_DIR="/wrfinput"
 OUTPUT_DIR="/wrfoutput"
-NML_DIR="/wrfinput"
+WPS_INPUT="/wrfinput"
 #
 
 # Read in command line options
@@ -37,18 +42,15 @@ case $opt in
         shift
         ;;
 
-    "-slots")
-        process_per_host="$2"
-        shift
-        ;;
-   
-   "-hosts")
+# wpsdir by default = /wrfinput
+   "-wpsdir")
+	WPS_INPUT="$2"
+	shift
+	;;
+
+# hosts format = "machine:slot,machine2:slot2" (comma separated, name:slot)
+   "-hosts")  
         hosts="$2"
-        shift
-        ;;
-        
-   "-iface")
-        iface="$2"
         shift
         ;;
 
@@ -63,12 +65,6 @@ case $opt in
        shift
        ;;
 
-   "-namelist")
-       my_namelist=true
-       NML_DIR="$2"
-       shift
-       ;;
-
    *)
         echo "Usage: Incorrect"
         exit 15
@@ -77,25 +73,21 @@ esac
 shift
 done
 
-echo "slots = " $process_per_host
-echo "iface = " $iface
 echo "num_procs = " $num_procs
 echo "skip_wps  = " $skip_wps
 echo "skip_real = " $skip_real
-echo "my_namelist = " $my_namelist
-echo "namelist dir = " $NML_DIR
+echo "wps_dir = " $WPS_INPUT
 # End sample argument list
-
-# start ssh
-#/usr/sbin/sshd
 
 # Set input data contain location
 
 #	To run the test, bring in the correct namelist.wps, and link the Grib data,
 #	select the right Vtable.
 
+cd $WRF_BUILD/WPS
+
 if [ $skip_wps = "false" ]; then #Don't skip wps
-echo "doing wps"
+echo "Starting WPS"
 
 cd $WRF_BUILD/WPS
 
@@ -117,10 +109,7 @@ cp -f $INPUT_DIR/Vtable.GFS Vtable
 #     Run the geogrid program    #
 ##################################
 
-# Remove old files
-  if [ -e geo_em.d01.nc ]; then
-	rm -rf geo_em.d01.nc
-  fi
+echo "- geogrid"
 
 # Command for geogrid
   ./geogrid.exe >& print.geogrid.txt
@@ -150,14 +139,8 @@ cp -f $INPUT_DIR/Vtable.GFS Vtable
 #    Run the ungrib program      #
 ##################################
 
-# checking to remove old files
-  file_date=`cat namelist.wps | grep -i start_date | cut -d"'" -f2 | cut -d":" -f1`
-  if [ -e PFILE:${file_date} ]; then
-	rm -rf PFILE*
-  fi
-  if [ -e FILE:${file_date} ]; then
-	rm -rf FILE*
-  fi
+echo "- ungrib"
+
 
 # Command for ungrib
   ./ungrib.exe >& print.ungrib.txt
@@ -185,10 +168,7 @@ cp -f $INPUT_DIR/Vtable.GFS Vtable
 #     Run the metgrid program    #
 ##################################
 
-# Remove old files
-  if [ -e met_em.d01.${file_date}:00:00.nc ]; then
-	rm -rf met_em.d01.*
-  fi
+echo "- metgrid"
 
 # Command for metgrid
   ./metgrid.exe >& print.metgrid.txt
@@ -212,8 +192,9 @@ cp -f $INPUT_DIR/Vtable.GFS Vtable
 	echo
 	exit 666
   fi
+fi
 
-fi # end if skip_wps = false
+
 
 ##################################
 #    Move to WRF                 #
@@ -222,33 +203,29 @@ fi # end if skip_wps = false
 # Go to test directory where tables, data, etc. exist
 # Perform wrf run here.
 
+echo "Starting WRF"
+
 cd $WRF_BUILD/WRFV3/run
 
-# Get namelist and modify colons
-#  if [ ! -e namelist.input.ORIG ]; then
-#	cp -f namelist.input namelist.input.ORIG
-#  fi
-
-cp $NML_DIR/namelist.input .
-#  cp $NML_DIR/namelist.input .
-#  sed -e '/nocolons/d' namelist.input > nml
-#  cp namelist.input namelist.nocolons
-#  mv nml namelist.input
+cp $INPUT_DIR/namelist.input .
 
 ##################################
 #     Run the real program       #
 ##################################
 
-if [ $skip_real = "false" ]; then # Don't skip real if true
-echo "doing real"
-
-# Link data from WPS
+if [ $skip_wps = "false" ]; then # Don't skip real if true
+  # Link data from WPS
   ln -sf $WRF_BUILD/WPS/met_em.d0* .
 
-# Remove old files
-  if [ -e wrfinput_d01 ]; then
-	rm -rf wrfi* wrfb*
-  fi
+else # skip_wps = true
+	
+   # Link data from wrfinput
+  ln -sf $WPS_INPUT/met_em.d0* .
+  
+fi # end if skip_wps
+
+if [ $skip_real = "false" ]; then # Don't skip real if true
+echo "- real"
 
 # Command for real
          ./real.exe
@@ -276,19 +253,24 @@ echo "doing real"
 	exit 777
   fi
 
+else # skip_real = true
+   cp $INPUT_DIR/wrfi* .
+   cp $INPUT_DIR/wrfb* .
+
 fi # end skip_real = false
 
 ##################################
 #   Run the WRF forecast model.  #
 ##################################
 
+echo "- wrf"
 # generate machine list
+# $hosts in the format "machine1:2,machine2:4", i.e., machine:slots
 IFS=,
 ary=($hosts)
 for key in "${!ary[@]}"; do echo "${ary[$key]}:${process_per_host}" >> /wrf/hosts; done
 
-# Command for openmpi wrf in Docker world
-#cp namelist.nocolons namelist.input
+# Command for mpi wrf in Docker world
 #
 # hostfile in mpich format
 time mpirun -hostfile /wrf/hosts -np $num_procs ./wrf.exe
