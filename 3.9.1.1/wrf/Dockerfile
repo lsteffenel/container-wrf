@@ -83,7 +83,8 @@ COPY wps_options ./WRFV3/wps_options
   && sed -i -e '/^DM_CC/ s/$/ -DMPI2_SUPPORT/' ./configure.wrf \
   && sed -i 's/-lwrfio_nf/-lwrfio_nf -lnetcdf -lnetcdff/' ./configure.wrf \
   && echo y > wrf_comp_options  \
-  && /bin/csh ./compile em_real < wrf_comp_options > compile.log
+  && /bin/csh ./compile em_real > compile.log
+#  && /bin/csh ./compile em_real < wrf_comp_options > compile.log
 # #
 # # Build WPS second
 # #
@@ -97,8 +98,9 @@ COPY wps_options ./WRFV3/wps_options
   && export JASPERLIB="/usr/lib/arm-linux-gnueabihf/"  \
   && export PATH="/usr/lib/mpich/bin:$PATH"  \
   && sed -i -e 's/#ARCH    Linux x86_64, gfortran/#ARCH    Linux armv7l, gfortran/' arch/configure.defaults \
-  && echo 1 > wps_comp_options \
-  && ./configure < wps_comp_options \
+  && sed -i -e 's/DM_FC               = mpif90 -f90=gfortran/DM_FC               = mpif90/' arch/configure.defaults \
+#  && echo 1 > wps_comp_options \
+  && ./configure < ../WRFV3/wps_options \
   && sed -i -e 's/-L$(NETCDF)\/lib/-L$(NETCDF)\/lib -lnetcdff -lnetcdf /' ./configure.wps \
   && sed -i 's/FFFFFFFF00000000/FFFFFFFF0000000/' ./ungrib/src/ngl/g2/intmath.f \
   && /bin/csh ./compile
@@ -125,15 +127,25 @@ ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
 #
 
+RUN apt-get install -y dnsutils coreutils
 
+#RUN apt-get install -y python-pip
+#RUN pip install kazoo
 
 # # copy in a couple custom scripts
  COPY run-wrf /wrf
  COPY docker-clean /wrf
+# COPY zoo-hosts-workers.py /wrf
+# COPY workers-init.sh /wrf
+# COPY zoo-hosts-master.py /wrf
  RUN chmod +x /wrf/run-wrf \
-  && chmod +x /wrf/docker-clean
+  && chmod +x /wrf/docker-clean 
+#  && chmod +x /wrf/zoo-hosts-workers.py \
+#  && chmod +x /wrf/zoo-hosts-master.py \
+#  && chmod +x /wrf/workers-init.sh
 # #
  RUN /wrf/docker-clean 
+# RUN /wrf/workers-init.sh
 # #
  VOLUME /wrf
 EXPOSE 22

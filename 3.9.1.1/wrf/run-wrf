@@ -15,11 +15,10 @@
 #Initalize options
 
 num_procs=1
-process_per_host=1
 skip_wps=false
 skip_real=false
 my_namelist=false
-hosts=127.0.0.1
+hosts=auto
 
 #
 # variables need to match docker container volume names:
@@ -79,6 +78,22 @@ echo "skip_real = " $skip_real
 echo "wps_dir = " $WPS_INPUT
 # End sample argument list
 
+# generate machine list
+# $hosts in the format "machine1:2,machine2:4", i.e., machine:slots
+rm /wrf/hosts
+if [ $hosts != "auto" ]
+then
+	IFS=,
+	ary=($hosts)
+	for key in "${!ary[@]}"; do echo "${ary[$key]}" >> /wrf/hosts; done
+else
+	iplists=`dig +short tasks.$(hostname) A`
+	for i in $iplists; do
+		np=`ssh $i "nproc --all"`
+		echo "$i:$np" >> /wrf/hosts
+	done
+fi
+
 # Set input data contain location
 
 #	To run the test, bring in the correct namelist.wps, and link the Grib data,
@@ -112,7 +127,8 @@ cp -f $INPUT_DIR/Vtable.GFS Vtable
 echo "- geogrid"
 
 # Command for geogrid
-  ./geogrid.exe >& print.geogrid.txt
+  mpirun -hostfile /wrf/hosts -np $num_procs ./geogrid.exe >& print.geogrid.txt
+#  ./geogrid.exe >& print.geogrid.txt
 
 # KRF: How much "checking" do we want?
 # Check success
@@ -171,7 +187,8 @@ echo "- ungrib"
 echo "- metgrid"
 
 # Command for metgrid
-  ./metgrid.exe >& print.metgrid.txt
+  mpirun -hostfile /wrf/hosts -np $num_procs ./metgrid.exe >& print.metgrid.txt
+#  ./metgrid.exe >& print.metgrid.txt
 
 # Check sucess
   ls -ls met_em.d01.*
@@ -264,12 +281,6 @@ fi # end skip_real = false
 ##################################
 
 echo "- wrf"
-# generate machine list
-# $hosts in the format "machine1:2,machine2:4", i.e., machine:slots
-IFS=,
-ary=($hosts)
-for key in "${!ary[@]}"; do echo "${ary[$key]}:${process_per_host}" >> /wrf/hosts; done
-
 # Command for mpi wrf in Docker world
 #
 # hostfile in mpich format
