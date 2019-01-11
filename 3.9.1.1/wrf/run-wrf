@@ -118,7 +118,7 @@ cp -f $INPUT_DIR/namelist.wps .
 cp -f $INPUT_DIR/Vtable.GFS Vtable
 
 # Link input data
-./link_grib.csh $INPUT_DIR/*_*
+./link_grib.csh $INPUT_DIR/*.grib2
 
 ##################################
 #     Run the geogrid program    #
@@ -127,8 +127,8 @@ cp -f $INPUT_DIR/Vtable.GFS Vtable
 echo "- geogrid"
 
 # Command for geogrid
-  mpirun -hostfile /wrf/hosts -np $num_procs ./geogrid.exe >& print.geogrid.txt
-#  ./geogrid.exe >& print.geogrid.txt
+#time mpirun -hostfile /wrf/hosts -np $num_procs ./geogrid.exe >& print.geogrid.txt
+ time ./geogrid.exe >& print.geogrid.txt
 
 # KRF: How much "checking" do we want?
 # Check success
@@ -159,7 +159,7 @@ echo "- ungrib"
 
 
 # Command for ungrib
-  ./ungrib.exe >& print.ungrib.txt
+  time ./ungrib.exe >& print.ungrib.txt
 
   ls -ls FILE:*
   OK_ungrib=$?
@@ -187,8 +187,8 @@ echo "- ungrib"
 echo "- metgrid"
 
 # Command for metgrid
-  mpirun -hostfile /wrf/hosts -np $num_procs ./metgrid.exe >& print.metgrid.txt
-#  ./metgrid.exe >& print.metgrid.txt
+#  time mpirun -hostfile /wrf/hosts -np $num_procs ./metgrid.exe >& print.metgrid.txt
+  time ./metgrid.exe >& print.metgrid.txt
 
 # Check sucess
   ls -ls met_em.d01.*
@@ -245,7 +245,7 @@ if [ $skip_real = "false" ]; then # Don't skip real if true
 echo "- real"
 
 # Command for real
-         ./real.exe
+  time ./real.exe
 
 # Check success
   ls -ls wrfinput_d01
