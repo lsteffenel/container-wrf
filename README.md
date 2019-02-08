@@ -28,7 +28,7 @@ To run in a single machine, you can use the following basic command:
 
 ```sh
 docker pull lsteffenel/wrf-container-armv7l
-docker run -it -v /PATH_TO/WPS_GEOG:/wps_geog -v /PATH_TO/YOUR_DATA:/wrfinput -v /PATH_TO/WRFOUTPUT:/wrfoutput wrf-container-armv7l /root/run-wrf
+docker run -it -v /PATH_TO/WPS_GEOG:/WPS_GEOG -v /PATH_TO/YOUR_DATA:/wrfinput -v /PATH_TO/WRFOUTPUT:/wrfoutput wrf-container-armv7l /root/run-wrf
 ```
 
 Or use it in a docker swarm environment:
