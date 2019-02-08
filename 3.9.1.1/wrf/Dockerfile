@@ -65,11 +65,8 @@ RUN echo export LDFLAGS="-lm" >> /etc/bashrc \
 #
 # Build WRF first
 # 
-#RUN source /etc/bashrc
 COPY wrf_options ./WRFV3/wrf_options
 COPY wps_options ./WRFV3/wps_options
-  ##&& ./configure <<< $'75\r1\r' \
-  #&& ./configure <<< $'3\r1\r' 
   RUN cd ./WRFV3 \
   && sed -i -e 's/#ARCH    Linux x86_64 ppc64le, gfortran/#ARCH    Linux armv7l ppc64le, gfortran/' arch/configure_new.defaults  
   RUN export LDFLAGS="-lm" \
@@ -84,7 +81,6 @@ COPY wps_options ./WRFV3/wps_options
   && sed -i 's/-lwrfio_nf/-lwrfio_nf -lnetcdf -lnetcdff/' ./configure.wrf \
   && echo y > wrf_comp_options  \
   && /bin/csh ./compile em_real > compile.log
-#  && /bin/csh ./compile em_real < wrf_comp_options > compile.log
 # #
 # # Build WPS second
 # #
@@ -99,17 +95,13 @@ COPY wps_options ./WRFV3/wps_options
   && export PATH="/usr/lib/mpich/bin:$PATH"  \
   && sed -i -e 's/#ARCH    Linux x86_64, gfortran/#ARCH    Linux armv7l, gfortran/' arch/configure.defaults \
   && sed -i -e 's/DM_FC               = mpif90 -f90=gfortran/DM_FC               = mpif90/' arch/configure.defaults \
-#  && echo 1 > wps_comp_options \
   && ./configure < ../WRFV3/wps_options \
   && sed -i -e 's/-L$(NETCDF)\/lib/-L$(NETCDF)\/lib -lnetcdff -lnetcdf /' ./configure.wps \
   && sed -i 's/FFFFFFFF00000000/FFFFFFFF0000000/' ./ungrib/src/ngl/g2/intmath.f \
   && /bin/csh ./compile
-# #
 
 # set up ssh configuration
 COPY ssh_config /root/.ssh/config
-# RUN mkdir -p /root/.openmpi
-# COPY default-mca-params.conf /root/.openmpi/mca-params.conf
 RUN mkdir -p /var/run/sshd \
     && ssh-keygen -A \
     && sed -i 's/#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config \
@@ -127,27 +119,26 @@ ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
 #
 
-RUN apt-get install -y dnsutils coreutils
-
-#RUN apt-get install -y python-pip
-#RUN pip install kazoo
+RUN apt-get install -y dnsutils coreutils \
+  && apt-get autoremove \
+  && apt-get clean
 
 # # copy in a couple custom scripts
- COPY run-wrf /wrf
+ COPY run-wrf /root
  COPY docker-clean /wrf
-# COPY zoo-hosts-workers.py /wrf
-# COPY workers-init.sh /wrf
-# COPY zoo-hosts-master.py /wrf
- RUN chmod +x /wrf/run-wrf \
+ RUN chmod +x /root/run-wrf \
   && chmod +x /wrf/docker-clean 
-#  && chmod +x /wrf/zoo-hosts-workers.py \
-#  && chmod +x /wrf/zoo-hosts-master.py \
-#  && chmod +x /wrf/workers-init.sh
 # #
- RUN /wrf/docker-clean 
-# RUN /wrf/workers-init.sh
+RUN /wrf/docker-clean 
 # #
- VOLUME /wrf
+VOLUME /wrf
+
 EXPOSE 22
+
+#COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+#RUN chmod +x /usr/local/bin/entrypoint.sh
+#ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+#CMD ["ssh-server"]
+#CMD ["tail -f /dev/null"]
 CMD ["/usr/sbin/sshd", "-D"]
 # CMD ["/wrf/run-wrf"]

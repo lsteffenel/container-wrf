@@ -78,19 +78,26 @@ echo "skip_real = " $skip_real
 echo "wps_dir = " $WPS_INPUT
 # End sample argument list
 
+cd $WRF_BUILD
+
 # generate machine list
 # $hosts in the format "machine1:2,machine2:4", i.e., machine:slots
-rm /wrf/hosts
+rm $WRF_BUILD/hosts
 if [ $hosts != "auto" ]
 then
 	IFS=,
 	ary=($hosts)
-	for key in "${!ary[@]}"; do echo "${ary[$key]}" >> /wrf/hosts; done
+	for key in "${!ary[@]}"; do echo "${ary[$key]}" >> $WRF_BUILD/hosts; done
 else
-	iplists=`dig +short tasks.$(hostname) A`
+	iplists=`dig +short tasks.master A`
 	for i in $iplists; do
 		np=`ssh $i "nproc --all"`
-		echo "$i:$np" >> /wrf/hosts
+		echo "$i:$np" >> $WRF_BUILD/hosts
+	done
+	iplists=`dig +short tasks.workers A`
+	for i in $iplists; do
+		np=`ssh $i "nproc --all"`
+		echo "$i:$np" >> $WRF_BUILD/hosts
 	done
 fi
 
@@ -118,7 +125,7 @@ cp -f $INPUT_DIR/namelist.wps .
 cp -f $INPUT_DIR/Vtable.GFS Vtable
 
 # Link input data
-./link_grib.csh $INPUT_DIR/*_*
+./link_grib.csh $INPUT_DIR/*.grib2
 
 ##################################
 #     Run the geogrid program    #
@@ -127,8 +134,8 @@ cp -f $INPUT_DIR/Vtable.GFS Vtable
 echo "- geogrid"
 
 # Command for geogrid
-  mpirun -hostfile /wrf/hosts -np $num_procs ./geogrid.exe >& print.geogrid.txt
-#  ./geogrid.exe >& print.geogrid.txt
+ time  mpirun -hostfile /wrf/hosts -np $num_procs ./geogrid.exe >& print.geogrid.txt
+time  ./geogrid.exe >& print.geogrid.txt
 
 # KRF: How much "checking" do we want?
 # Check success
@@ -159,7 +166,7 @@ echo "- ungrib"
 
 
 # Command for ungrib
-  ./ungrib.exe >& print.ungrib.txt
+time  ./ungrib.exe >& print.ungrib.txt
 
   ls -ls FILE:*
   OK_ungrib=$?
@@ -187,8 +194,8 @@ echo "- ungrib"
 echo "- metgrid"
 
 # Command for metgrid
-  mpirun -hostfile /wrf/hosts -np $num_procs ./metgrid.exe >& print.metgrid.txt
-#  ./metgrid.exe >& print.metgrid.txt
+#  time mpirun -hostfile /wrf/hosts -np $num_procs ./metgrid.exe >& print.metgrid.txt
+ time  ./metgrid.exe >& print.metgrid.txt
 
 # Check sucess
   ls -ls met_em.d01.*

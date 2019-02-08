@@ -1,0 +1,43 @@
+version: "3.3"
+services:
+  workers:
+    image: lsteffenel/wrf-container-armv7l:latest
+    user: root
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+      placement:
+        preferences:
+          - spread: node.labels.datacenter
+    volumes:
+      - "./WPS_GEOG:/WPS_GEOG"
+      - "./wrfinput:/wrfinput"
+      - "./wrfoutput:/wrfoutput"
+    networks:
+      - wrfnet
+  master:
+    image: lsteffenel/wrf-container-armv7l:latest
+    user: root
+    deploy:
+      mode:
+        global
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints:
+          - node.role == manager
+    ports:
+      - published: 2022
+        target: 22
+        mode: host 
+    volumes:
+      - "./WPS_GEOG:/WPS_GEOG"
+      - "./wrfinput:/wrfinput"
+      - "./wrfoutput:/wrfoutput"
+    networks:
+      - wrfnet
+networks:
+  wrfnet:
+    driver: overlay
+    attachable: true
