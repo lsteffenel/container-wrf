@@ -6,8 +6,7 @@ Based on the NCAR/wrf-container bigwxwrf [https://github.com/NCAR/container-wrf/
 
 This version was specifically modified to compile and run in a Raspberry Pi (tested with RPi 3 and Raspbian Jessie), thanks to the help of [http://supersmith.com/site/ARM_files/wrf_on_arm.pdf] and [https://www.raspberrypi.org/forums/viewtopic.php?t=19248].
 
-The centos version (:centos) is based on the original bigxwrf Dockerfile.
-The latest version (:latest) was migrated to Ubuntu 16.04 in order to better support kubernetes/cluster deployment.
+The latest version (:latest) was migrated to Ubuntu 16.04 in order to simplify the compiling deployment.
 
 Only the wrf executables were modified, you can keep using the wps_geog and data samples from bigwxwrf.
 
@@ -24,9 +23,18 @@ ARM version developed for the **CAPES-Cofecub project MESO - Modeling and foreca
   * namelist.wps
   * namelist.input - be sure to put ``history_outname``pointing to ``/wrfoutput``
  
-To run, you can use the following basic command:
+To run in a single machine, you can use the following basic command:
+
 
 ```sh
 docker pull lsteffenel/wrf-container-armv7l
-docker run -it -v /PATH_TO/WPS_GEOG:/wps_geog -v /PATH_TO/YOUR_DATA:/wrfinput -v /PATH_TO/WRFOUTPUT:/wrfoutput wrf-container-armv7l /wrf/run-wrf
+docker run -it -v /PATH_TO/WPS_GEOG:/wps_geog -v /PATH_TO/YOUR_DATA:/wrfinput -v /PATH_TO/WRFOUTPUT:/wrfoutput wrf-container-armv7l /root/run-wrf
+```
+
+Or use it in a docker swarm environment:
+```sh
+docker swarm init (...)
+docker stack deploy -c docker-compose.yml mywrf
+ssh ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no root@localhost -p 2022
+docker-master:/root# run-wrf [options]
 ```
