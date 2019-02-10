@@ -1,10 +1,10 @@
-# container-wrf - ARM version
+# container-wrf - ARM version (and x86 too)
 #
 containerized WRF for single-node modeling runs, classroom teaching and training examples.
 
 Based on the NCAR/wrf-container bigwxwrf [https://github.com/NCAR/container-wrf/] set of docker images
 
-This version was specifically modified to compile and run in a Raspberry Pi (tested with RPi 3 and Raspbian Jessie), thanks to the help of [http://supersmith.com/site/ARM_files/wrf_on_arm.pdf] and [https://www.raspberrypi.org/forums/viewtopic.php?t=19248].
+This version was specifically modified to compile and run in a Raspberry Pi (tested with RPi 3 and Raspbian Jessie), thanks to the help of [http://supersmith.com/site/ARM_files/wrf_on_arm.pdf] and [https://www.raspberrypi.org/forums/viewtopic.php?t=19248]. A companion image has been generated to x86 architectures.
 
 The latest version (:latest) was migrated to Ubuntu 16.04 in order to simplify the compiling deployment.
 
@@ -38,3 +38,19 @@ docker stack deploy -c docker-compose.yml mywrf
 ssh ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no root@localhost -p 2022
 docker-master:/root# run-wrf [options]
 ```
+### How to use run-wrf parameters: 
+
+* simple run on localhost (WPS+real+WRF) - 4 cores, 4 processes
+```# ./run-wrf -hosts localhost:4 -np 4```
+
+* Just real + WRF (met* files from WPS) - 4 cores, 4 processes (don't need to have /WPS_GEOG)
+```# ./run-wrf -skip wps -hosts localhost:4 -np 4```
+
+* Just WRF (met* files from WPS and wrfbdy* + wrfinput* from real in /wrfinput) - 2 cores, 2 processes
+```# ./run-wrf -skip wps -skip real -hosts localhost:2 -np 2```
+
+* Docker Swarm: 
+  * On the Docker swarm mode, auto discovery of nodes (and #of cores) can be enable with -hosts auto (default option)
+```# ./run-wrf [-hosts auto] -np 12```
+  * Otherwise, one can detail each machine as usual 
+```# ./run-wrf -hosts machine1:2,machine2:2 -np 4```
