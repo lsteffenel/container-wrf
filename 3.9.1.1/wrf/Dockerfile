@@ -54,15 +54,6 @@ RUN echo export LDFLAGS="-lm" >> /etc/bashrc \
  ENV LD_LIBRARY_PATH /usr/lib/mpich/lib
  ENV PATH  /usr/lib/mpich/bin:$PATH
 #
-#
-# Get and build netcdf first
-#
-# RUN wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-3.6.3.tar.gz \
-#    && gzip -c -d ./netcdf-3.6.3.tar.gz | tar -xo \
-#    && cd netcdf-3.6.3 \
-#    && ./configure --prefix=/soft/netcdf/3.6.3 \
-#    && make && make check && make install && cd ..
-#
 # Build WRF first
 # 
 COPY wrf_options ./WRFV3/wrf_options
@@ -135,10 +126,4 @@ VOLUME /wrf
 
 EXPOSE 22
 
-#COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-#RUN chmod +x /usr/local/bin/entrypoint.sh
-#ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-#CMD ["ssh-server"]
-#CMD ["tail -f /dev/null"]
 CMD ["/usr/sbin/sshd", "-D"]
-# CMD ["/wrf/run-wrf"]
