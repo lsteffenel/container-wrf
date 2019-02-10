@@ -75,7 +75,7 @@ COPY wps_options ./WRFV3/wps_options
 # #
 # # Build WPS second
 # #
-# # input 1 to configure script
+# # input 1 to configure WPS on mode "serial" or 3 on dmpar (MPI): default = 3 (wps_options)
  RUN cd ./WPS \
   && export LDFLAGS="-lm" \
   && export NETCDF="/usr" \
