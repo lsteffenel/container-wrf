@@ -36,7 +36,8 @@ Or use it in a docker swarm environment:
 docker swarm init (...)
 docker stack deploy -c docker-compose.yml mywrf
 ssh ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no root@localhost -p 2022
-docker-master:/root# run-wrf [options]
+## password = meso
+docker-master:/root# ./run-wrf [options]
 ```
 ### How to use run-wrf parameters: 
 
