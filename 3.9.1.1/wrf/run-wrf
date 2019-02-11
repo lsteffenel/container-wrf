@@ -134,13 +134,10 @@ cp -f $INPUT_DIR/Vtable.GFS Vtable
 echo "- geogrid"
 
 # Command for geogrid
-<<<<<<< HEAD
- time  mpirun -hostfile /wrf/hosts -np $num_procs ./geogrid.exe >& print.geogrid.txt
-time  ./geogrid.exe >& print.geogrid.txt
-=======
+
 #time mpirun -hostfile /wrf/hosts -np $num_procs ./geogrid.exe >& print.geogrid.txt
  time ./geogrid.exe >& print.geogrid.txt
->>>>>>> c9167ad26ff7aa2db6819d90f0cef0c00dcfb9fb
+
 
 # KRF: How much "checking" do we want?
 # Check success
@@ -171,11 +168,9 @@ echo "- ungrib"
 
 
 # Command for ungrib
-<<<<<<< HEAD
-time  ./ungrib.exe >& print.ungrib.txt
-=======
+
   time ./ungrib.exe >& print.ungrib.txt
->>>>>>> c9167ad26ff7aa2db6819d90f0cef0c00dcfb9fb
+
 
   ls -ls FILE:*
   OK_ungrib=$?
@@ -204,11 +199,9 @@ echo "- metgrid"
 
 # Command for metgrid
 #  time mpirun -hostfile /wrf/hosts -np $num_procs ./metgrid.exe >& print.metgrid.txt
-<<<<<<< HEAD
- time  ./metgrid.exe >& print.metgrid.txt
-=======
+
   time ./metgrid.exe >& print.metgrid.txt
->>>>>>> c9167ad26ff7aa2db6819d90f0cef0c00dcfb9fb
+
 
 # Check sucess
   ls -ls met_em.d01.*
