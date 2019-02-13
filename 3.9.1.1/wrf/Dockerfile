@@ -123,7 +123,7 @@ RUN apt-get install -y dnsutils coreutils \
 RUN /wrf/docker-clean 
 # #
 VOLUME /wrf
-
+WORKDIR /root
 EXPOSE 22
 
 CMD ["/usr/sbin/sshd", "-D"]
